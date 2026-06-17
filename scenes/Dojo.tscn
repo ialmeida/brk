@@ -1,0 +1,48 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/Dojo.gd" id="1"]
+[ext_resource type="PackedScene" path="res://actors/player/Player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://actors/boss/Boss.tscn" id="3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_trigger"]
+size = Vector2(64, 96)
+
+[node name="Dojo" type="Node2D"]
+script = ExtResource("1")
+
+[node name="TileMapLayer" type="TileMapLayer" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(200, 300)
+
+[node name="TrainingDummy" parent="." instance=ExtResource("3")]
+position = Vector2(420, 300)
+
+[node name="TutorialUI" type="CanvasLayer" parent="."]
+
+[node name="PromptLabel" type="Label" parent="TutorialUI"]
+offset_left = 32.0
+offset_top = 24.0
+offset_right = 800.0
+offset_bottom = 64.0
+text = "Land a 3-hit Punch combo (P P P)"
+
+[node name="StageTriggers" type="Node" parent="."]
+
+[node name="PunchZone" type="Area2D" parent="StageTriggers"]
+position = Vector2(280, 300)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StageTriggers/PunchZone"]
+shape = SubResource("RectangleShape2D_trigger")
+
+[node name="KickZone" type="Area2D" parent="StageTriggers"]
+position = Vector2(360, 300)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StageTriggers/KickZone"]
+shape = SubResource("RectangleShape2D_trigger")
+
+[node name="MasterZone" type="Area2D" parent="StageTriggers"]
+position = Vector2(420, 300)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StageTriggers/MasterZone"]
+shape = SubResource("RectangleShape2D_trigger")

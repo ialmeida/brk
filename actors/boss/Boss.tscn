@@ -1,0 +1,163 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://actors/boss/Boss.gd" id="1"]
+[ext_resource type="Script" path="res://actors/boss/states/BossStateMachine.gd" id="2"]
+[ext_resource type="Script" path="res://actors/boss/states/BossIdle.gd" id="3"]
+[ext_resource type="Script" path="res://actors/boss/states/BossAttack.gd" id="4"]
+[ext_resource type="Script" path="res://actors/boss/states/BossStagger.gd" id="5"]
+[ext_resource type="Script" path="res://actors/boss/states/BossHurt.gd" id="6"]
+[ext_resource type="Script" path="res://actors/boss/states/BossDead.gd" id="7"]
+[ext_resource type="Script" path="res://components/StatsComponent.gd" id="8"]
+[ext_resource type="Script" path="res://components/HealthComponent.gd" id="9"]
+[ext_resource type="PackedScene" path="res://components/Hitbox.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://components/Hurtbox.tscn" id="11"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_boss_body"]
+radius = 12.0
+height = 36.0
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_boss_sprite"]
+size = Vector2(48, 48)
+
+[sub_resource type="Animation" id="Animation_attack"]
+resource_name = "attack"
+length = 0.4
+loop_mode = 0
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("StateMachine/BossAttack")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.4),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_on_attack_finished"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_hurt"]
+resource_name = "hurt"
+length = 0.3
+loop_mode = 0
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("StateMachine/BossHurt")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.3),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_on_hurt_finished"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_boss"]
+_data = {
+"attack": SubResource("Animation_attack"),
+"hurt": SubResource("Animation_hurt")
+}
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_boss"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("PlaceholderTexture2D_boss_sprite")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("PlaceholderTexture2D_boss_sprite")
+}],
+"loop": true,
+"name": &"stagger",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("PlaceholderTexture2D_boss_sprite")
+}],
+"loop": false,
+"name": &"attack",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("PlaceholderTexture2D_boss_sprite")
+}],
+"loop": false,
+"name": &"hurt",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("PlaceholderTexture2D_boss_sprite")
+}],
+"loop": false,
+"name": &"dead",
+"speed": 8.0
+}]
+
+[node name="Boss" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_boss")
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_boss_body")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("2")
+initial_state = NodePath("BossIdle")
+
+[node name="BossIdle" type="Node" parent="StateMachine"]
+script = ExtResource("3")
+
+[node name="BossAttack" type="Node" parent="StateMachine"]
+script = ExtResource("4")
+
+[node name="BossStagger" type="Node" parent="StateMachine"]
+script = ExtResource("5")
+
+[node name="BossHurt" type="Node" parent="StateMachine"]
+script = ExtResource("6")
+
+[node name="BossDead" type="Node" parent="StateMachine"]
+script = ExtResource("7")
+
+[node name="Hitbox" parent="." instance=ExtResource("10")]
+position = Vector2(18, 0)
+collision_layer = 16
+collision_mask = 32
+
+[node name="Hurtbox" parent="." instance=ExtResource("11")]
+collision_layer = 64
+collision_mask = 0
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("9")
+max_health = 150.0
+
+[node name="StatsComponent" type="Node" parent="."]
+script = ExtResource("8")
+
+[node name="StaggerTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+callback_mode_process = 0
+libraries = {
+"": SubResource("AnimationLibrary_boss")
+}
