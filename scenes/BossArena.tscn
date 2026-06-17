@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/BossArena.gd" id="1"]
 [ext_resource type="PackedScene" path="res://actors/player/Player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://actors/boss/Boss.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://ui/TouchControls.tscn" id="4"]
 
 [node name="BossArena" type="Node2D"]
 script = ExtResource("1")
@@ -17,6 +18,8 @@ position = Vector2(620, 360)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(420, 360)
+
+[node name="TouchControls" parent="." instance=ExtResource("4")]
 
 [node name="HUD" type="CanvasLayer" parent="."]
 

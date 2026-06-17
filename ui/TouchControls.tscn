@@ -1,0 +1,199 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dpad"]
+size = Vector2(56, 56)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_action"]
+size = Vector2(64, 64)
+
+[node name="TouchControls" type="CanvasLayer"]
+layer = 10
+
+[node name="BtnUp" type="TouchScreenButton" parent="."]
+position = Vector2(100, 452)
+shape = SubResource("RectangleShape2D_dpad")
+shape_centered = true
+shape_visible = false
+visibility_mode = 0
+action = "move_up"
+
+[node name="Bg" type="ColorRect" parent="BtnUp"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+color = Color(0.3, 0.6, 1, 0.35)
+
+[node name="Label" type="Label" parent="BtnUp"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "^"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnDown" type="TouchScreenButton" parent="."]
+position = Vector2(100, 588)
+shape = SubResource("RectangleShape2D_dpad")
+shape_centered = true
+shape_visible = false
+visibility_mode = 0
+action = "move_down"
+
+[node name="Bg" type="ColorRect" parent="BtnDown"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+color = Color(0.3, 0.6, 1, 0.35)
+
+[node name="Label" type="Label" parent="BtnDown"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "v"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnLeft" type="TouchScreenButton" parent="."]
+position = Vector2(32, 520)
+shape = SubResource("RectangleShape2D_dpad")
+shape_centered = true
+shape_visible = false
+visibility_mode = 0
+action = "move_left"
+
+[node name="Bg" type="ColorRect" parent="BtnLeft"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+color = Color(0.3, 0.6, 1, 0.35)
+
+[node name="Label" type="Label" parent="BtnLeft"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "<"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnRight" type="TouchScreenButton" parent="."]
+position = Vector2(168, 520)
+shape = SubResource("RectangleShape2D_dpad")
+shape_centered = true
+shape_visible = false
+visibility_mode = 0
+action = "move_right"
+
+[node name="Bg" type="ColorRect" parent="BtnRight"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+color = Color(0.3, 0.6, 1, 0.35)
+
+[node name="Label" type="Label" parent="BtnRight"]
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = ">"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnPunch" type="TouchScreenButton" parent="."]
+position = Vector2(944, 580)
+shape = SubResource("RectangleShape2D_action")
+shape_centered = true
+shape_visible = false
+visibility_mode = 0
+action = "punch"
+
+[node name="Bg" type="ColorRect" parent="BtnPunch"]
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+color = Color(1, 0.4, 0.3, 0.4)
+
+[node name="Label" type="Label" parent="BtnPunch"]
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "P"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnKick" type="TouchScreenButton" parent="."]
+position = Vector2(1024, 540)
+shape = SubResource("RectangleShape2D_action")
+shape_centered = true
+shape_visible = false
+visibility_mode = 0
+action = "kick"
+
+[node name="Bg" type="ColorRect" parent="BtnKick"]
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+color = Color(1, 0.4, 0.3, 0.4)
+
+[node name="Label" type="Label" parent="BtnKick"]
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "K"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnCharge" type="TouchScreenButton" parent="."]
+position = Vector2(1104, 580)
+shape = SubResource("RectangleShape2D_action")
+shape_centered = true
+shape_visible = false
+visibility_mode = 0
+action = "charge"
+
+[node name="Bg" type="ColorRect" parent="BtnCharge"]
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+color = Color(1, 0.4, 0.3, 0.4)
+
+[node name="Label" type="Label" parent="BtnCharge"]
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "C"
+horizontal_alignment = 1
+vertical_alignment = 1
