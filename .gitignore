@@ -8,6 +8,9 @@
 # Export presets (may contain signing credentials)
 export_presets.cfg
 
+# Exported builds
+build/
+
 # macOS
 .DS_Store
 
