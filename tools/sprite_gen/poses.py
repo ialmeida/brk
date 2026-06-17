@@ -48,15 +48,20 @@ STYLE_LOCK_INSTRUCTION = (
     "You are given two reference images: (1) a reference image of the character, used "
     "only for likeness (face, hair, skin tone, build, outfit), and (2) an already-approved "
     "pixel-art sprite of this exact character in an idle pose, which defines the exact art "
-    "style, color palette, proportions, and outline thickness to match exactly. Generate a "
-    "NEW pose of the SAME character matching image (2)'s style precisely, using image (1) "
-    "only for likeness reference."
+    "style, color palette, proportions, and outline thickness to match exactly. This "
+    "includes the hair: image (2)'s hair is short, flat, and close-cropped with very little "
+    "thickness above the scalp -- when turning the head to a new angle, keep that exact same "
+    "thin hair volume and silhouette, just rotated. Do NOT inflate the hair into a thicker, "
+    "rounder, dome-shaped, or mushroom-shaped mass just because the head is turned; a turned "
+    "head must look like the same flat haircut from image (2), not a bigger hairstyle. "
+    "Generate a NEW pose of the SAME character matching image (2)'s style precisely, using "
+    "image (1) only for likeness reference."
 )
 
 DIRECTION_PROMPTS: dict[str, str] = {
     "down": "The character faces the viewer/camera (south), so their face and front of body are visible.",
     "up": "The character faces away from the viewer/camera (north) for this ENTIRE pose, including during attacks -- they do NOT turn, twist, or rotate back toward the camera even while punching, kicking, or charging energy. Show only the back of their head and body. Their face must NOT be visible at all, not even in partial profile -- punches and kicks are thrown straight ahead, away from the camera, with the back of the head still fully covering the face.",
-    "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible.",
+    "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible. The hair silhouette must stay exactly as short and close-cropped as the reference idle pose -- do NOT add extra volume, height, or poof to the hair just because the head is turned; it should look like the same flat, neat haircut simply rotated, not a bigger or fluffier hairstyle.",
 }
 
 # Order matters only for the idle-first two-phase workflow in generate_sprites.py.
@@ -118,9 +123,12 @@ POSE_PROMPTS: dict[str, str] = {
         "next strike, building intensity."
     ),
     "master_4": (
-        "Final finishing blow of the master combo: a massive heavy haymaker punch, "
-        "maximum exaggerated extension and impact energy, dramatic finishing-move "
-        "pose, the most intense and largest pose in the whole set."
+        "Final finishing blow of the master combo: a massive heavy haymaker punch "
+        "thrown with full-body rotation and weight transfer, dramatic finishing-move "
+        "pose, the most intense pose in the whole set -- but the punching fist and "
+        "hand must stay the SAME normal size as the character's other hand and the "
+        "rest of their body. Do NOT draw an oversized, close-up, or exaggerated "
+        "giant fist; proportions must match every other pose exactly."
     ),
 }
 
