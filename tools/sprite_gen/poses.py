@@ -27,7 +27,9 @@ STYLE_PREAMBLE = (
     "alpha background only). Centered in frame with consistent character scale and "
     "proportions. Likeness: base the character's face, hair, skin tone, and build on the "
     "attached reference image of the character, keeping the same anime art style, while "
-    "rendering it as a chibi top-down pixel-art game sprite."
+    "rendering it as a chibi top-down pixel-art game sprite. The character wears normal "
+    "clear prescription glasses with a thin frame -- ordinary see-through eyeglasses, "
+    "never dark sunglasses, tinted lenses, or opaque shades."
 )
 
 STYLE_LOCK_INSTRUCTION = (
