@@ -126,13 +126,13 @@ def main() -> int:
             results[name] = "skipped (already exists)"
             continue
 
-        if name != "idle" and base_img is None:
-            results[name] = "skipped (no --base-image provided; generate+approve idle first)"
+        if name != "idle_down" and base_img is None:
+            results[name] = "skipped (no --base-image provided; generate+approve idle_down first)"
             continue
 
         print(f"Generating {name}...")
         try:
-            pose_base = None if name == "idle" else base_img
+            pose_base = None if name == "idle_down" else base_img
             raw_img = generate_one(client, args.model, POSE_PROMPTS[name], reference_img, pose_base)
             raw_img.convert("RGBA").save(raw_path)
             processed = process_image(raw_img, quantize_colors=args.quantize or None)
@@ -148,8 +148,8 @@ def main() -> int:
         if status.startswith("FAILED"):
             failures += 1
 
-    if "idle" in pose_names and results.get("idle") == "ok":
-        print(f"\nInspect {args.out_dir / 'idle.png'} now before generating the other poses.")
+    if "idle_down" in pose_names and results.get("idle_down") == "ok":
+        print(f"\nInspect {args.out_dir / 'idle_down.png'} now before generating the other poses.")
 
     return 1 if failures else 0
 
