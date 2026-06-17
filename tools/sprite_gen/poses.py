@@ -55,7 +55,7 @@ STYLE_LOCK_INSTRUCTION = (
 
 DIRECTION_PROMPTS: dict[str, str] = {
     "down": "The character faces the viewer/camera (south), so their face and front of body are visible.",
-    "up": "The character faces away from the viewer/camera (north), so the back of their head and body are visible, with little to no face visible.",
+    "up": "The character faces away from the viewer/camera (north) for this ENTIRE pose, including during attacks -- they do NOT turn, twist, or rotate back toward the camera even while punching, kicking, or charging energy. Show only the back of their head and body. Their face must NOT be visible at all, not even in partial profile -- punches and kicks are thrown straight ahead, away from the camera, with the back of the head still fully covering the face.",
     "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible.",
 }
 
