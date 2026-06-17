@@ -21,7 +21,7 @@ from pathlib import Path
 from PIL import Image
 
 from poses import POSE_NAMES, POSE_PROMPTS, STYLE_LOCK_INSTRUCTION, STYLE_PREAMBLE
-from postprocess import process_image
+from postprocess import natural_scale, process_image
 
 DEFAULT_MODEL = "gemini-2.5-flash-image"
 MAX_RETRIES = 2
@@ -41,6 +41,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-existing", dest="skip_existing", action="store_true", default=True)
     parser.add_argument("--force", dest="skip_existing", action="store_false",
                          help="Overwrite existing outputs instead of skipping them")
+    parser.add_argument("--reprocess-only", action="store_true",
+                         help="Re-run post-processing on cached raw/ images instead of calling "
+                              "the model again -- use this to apply a postprocess.py fix to "
+                              "already-generated art for free")
     parser.add_argument("--raw-dir", type=Path, default=Path("assets/sprites/player/raw"))
     parser.add_argument("--out-dir", type=Path, default=Path("assets/sprites/player/processed"))
     parser.add_argument("--model", default=DEFAULT_MODEL)
@@ -89,38 +93,66 @@ def generate_one(client, model: str, prompt: str, reference_img: Image.Image,
     raise RuntimeError(f"Generation failed after retries: {last_error}")
 
 
+def reference_scale(raw_dir: Path) -> float | None:
+    """Scale factor derived from the approved idle_down's cached raw image, applied to
+    every pose so character size stays consistent (see postprocess.natural_scale)."""
+    idle_down_raw = raw_dir / "idle_down.png"
+    if not idle_down_raw.exists():
+        return None
+    return natural_scale(Image.open(idle_down_raw).convert("RGBA"))
+
+
 def main() -> int:
     args = parse_args()
 
-    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    if not api_key:
-        sys.exit("GEMINI_API_KEY is not set. Export it in your shell first -- never pass it as a flag.")
+    if not args.reprocess_only:
+        api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if not api_key:
+            sys.exit("GEMINI_API_KEY is not set. Export it in your shell first -- never pass it as a flag.")
 
     if not args.reference.exists():
         sys.exit(f"Reference photo not found: {args.reference}")
 
-    try:
-        from google import genai
-    except ImportError:
-        sys.exit("google-genai is not installed. Run: pip install -r tools/sprite_gen/requirements.txt")
-
-    client = genai.Client(api_key=api_key)
-    reference_img = Image.open(args.reference).convert("RGB")
-
+    client = None
+    reference_img = None
     base_img = None
-    if args.base_image is not None:
-        if not args.base_image.exists():
-            sys.exit(f"--base-image not found: {args.base_image}")
-        base_img = Image.open(args.base_image).convert("RGBA")
+    if not args.reprocess_only:
+        try:
+            from google import genai
+        except ImportError:
+            sys.exit("google-genai is not installed. Run: pip install -r tools/sprite_gen/requirements.txt")
+
+        client = genai.Client(api_key=api_key)
+        reference_img = Image.open(args.reference).convert("RGB")
+
+        if args.base_image is not None:
+            if not args.base_image.exists():
+                sys.exit(f"--base-image not found: {args.base_image}")
+            base_img = Image.open(args.base_image).convert("RGBA")
 
     pose_names = build_pose_list(args)
     args.raw_dir.mkdir(parents=True, exist_ok=True)
     args.out_dir.mkdir(parents=True, exist_ok=True)
+    scale = reference_scale(args.raw_dir)
 
     results: dict[str, str] = {}
     for name in pose_names:
         out_path = args.out_dir / f"{name}.png"
         raw_path = args.raw_dir / f"{name}.png"
+
+        if args.reprocess_only:
+            if not raw_path.exists():
+                results[name] = "FAILED: no cached raw image to reprocess"
+                continue
+            try:
+                raw_img = Image.open(raw_path).convert("RGBA")
+                processed = process_image(raw_img, quantize_colors=args.quantize or None,
+                                           scale=scale if name != "idle_down" else None)
+                processed.save(out_path)
+                results[name] = "ok (reprocessed)"
+            except Exception as exc:  # noqa: BLE001 - continue the batch on per-pose failure
+                results[name] = f"FAILED: {exc}"
+            continue
 
         if args.skip_existing and out_path.exists():
             results[name] = "skipped (already exists)"
@@ -135,8 +167,12 @@ def main() -> int:
             pose_base = None if name == "idle_down" else base_img
             raw_img = generate_one(client, args.model, POSE_PROMPTS[name], reference_img, pose_base)
             raw_img.convert("RGBA").save(raw_path)
-            processed = process_image(raw_img, quantize_colors=args.quantize or None)
+            is_idle_down = name == "idle_down"
+            processed = process_image(raw_img, quantize_colors=args.quantize or None,
+                                       scale=None if is_idle_down else scale)
             processed.save(out_path)
+            if is_idle_down:
+                scale = reference_scale(args.raw_dir)
             results[name] = "ok"
         except Exception as exc:  # noqa: BLE001 - continue the batch on per-pose failure
             results[name] = f"FAILED: {exc}"

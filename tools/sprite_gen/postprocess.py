@@ -96,20 +96,45 @@ def _quantize_preserving_alpha(img: Image.Image, colors: int) -> Image.Image:
     return quantized
 
 
-def process_image(raw: Image.Image, quantize_colors: int | None = 32) -> Image.Image:
-    """Clean up a raw model PNG into a crisp, consistently-anchored sprite."""
+def _keyed_and_cropped(raw: Image.Image) -> Image.Image:
     img = raw.convert("RGBA")
     img = _key_out_background(img)
     img = _snap_alpha(img)
-
     bbox = img.getbbox()
     if bbox is not None:
         img = img.crop(bbox)
+    return img
+
+
+def natural_scale(raw: Image.Image) -> float:
+    """The scale factor that maps this image's own cropped height to TARGET_CHAR_HEIGHT.
+
+    Used to derive a single reference scale from the approved idle pose, which is then
+    applied to every other pose so character size stays consistent across poses instead
+    of independently renormalizing each pose's own bounding box (which varies with
+    pose -- e.g. a raised arm or crouch -- and otherwise makes the character look bigger
+    or smaller from pose to pose)."""
+    h = _keyed_and_cropped(raw).size[1]
+    if h == 0:
+        raise ValueError("Image has no visible content after background removal")
+    return TARGET_CHAR_HEIGHT / h
+
+
+def process_image(raw: Image.Image, quantize_colors: int | None = 32,
+                   scale: float | None = None) -> Image.Image:
+    """Clean up a raw model PNG into a crisp, consistently-anchored sprite.
+
+    If `scale` is omitted, the image is scaled to make its own cropped height exactly
+    TARGET_CHAR_HEIGHT. Pass a fixed `scale` (see `natural_scale`) to keep character size
+    consistent with a reference pose instead.
+    """
+    img = _keyed_and_cropped(raw)
 
     w, h = img.size
     if h == 0:
         raise ValueError("Image has no visible content after background removal")
-    scale = TARGET_CHAR_HEIGHT / h
+    if scale is None:
+        scale = TARGET_CHAR_HEIGHT / h
     new_w = max(1, round(w * scale))
     new_h = max(1, round(h * scale))
     img = img.resize((new_w, new_h), Image.NEAREST)
