@@ -1,107 +1,146 @@
-"""Prompt text for each Player animation pose, used by generate_sprites.py."""
+"""Prompt text for each Player animation pose x direction, used by generate_sprites.py."""
 
 STYLE_PREAMBLE = (
-    "Pixel art sprite of a video game character, in the exact style of classic 16-bit "
-    "SNES/Genesis side-scrolling beat-em-up character sprites (like Streets of Rage or "
-    "Final Fight). Single character, full body visible head to feet, standing on a flat "
-    "invisible ground line.\n\n"
-    "CAMERA ANGLE -- this is the most important constraint, follow it exactly: a true "
-    "90-degree side view, like a photo taken from directly to the character's left so "
-    "they appear walking/fighting to the right across the screen. The body is a narrow "
-    "side silhouette, not a wide front silhouette. The head is turned in profile: only "
-    "ONE eye, ONE eyebrow, and the side/back of the head and ONE ear are visible -- the "
-    "nose, lips, and chin show a profile (side) outline, never two eyes and never a "
-    "symmetric front-on face. The torso shows only the near shoulder, with the far "
-    "shoulder hidden or barely visible behind it -- never two symmetric shoulders facing "
-    "the viewer. Any shirt logo, collar, or button line should run vertically along the "
-    "narrow profile of the torso, not appear as a centered front-facing emblem. Do NOT "
-    "generate a front-facing portrait, a mugshot-style pose, or a 3/4 angle -- this must "
-    "read as a flat side silhouette like a character-select sprite, not a portrait.\n\n"
+    "Pixel art sprite of a video game character, in a steep top-down action-RPG camera "
+    "angle, in the exact style of classic top-down chibi RPG sprites (Secret of Mana, "
+    "Chrono Trigger overworld sprites, Pokemon overworld sprites, Stardew Valley) -- "
+    "anime-influenced character art with vibrant colors and clean linework. Single "
+    "character, full body visible head to feet, standing on a flat invisible ground line.\n\n"
+    "BODY PROPORTIONS -- this is critical, follow it exactly: moderate CHIBI proportions "
+    "like Chrono Trigger or Secret of Mana overworld sprites -- NOT realistic human "
+    "proportions, but also NOT an extreme bobble-head caricature. The head is somewhat "
+    "enlarged, roughly 1/4 to 1/3 of the character's total height -- noticeably bigger "
+    "than a real human head-to-body ratio, but the body must still read as a small "
+    "person with clearly defined arms, legs, and torso, not a tiny stub-limbed blob.\n\n"
+    "CAMERA ANGLE -- this is also critical, follow it exactly: this is a TOP-DOWN GAME "
+    "SPRITE, not a character portrait or character-select art. The camera is high above "
+    "the character looking down at roughly a 60-75 degree angle from horizontal (much "
+    "closer to a bird's-eye view than eye-level). Concretely: the top of the head reads "
+    "as a flattened oval/dome shape because you are looking down onto the crown of the "
+    "head; the eyes and eyebrows sit low in the face, close to the bottom edge of the "
+    "head shape, with very little forehead-to-hairline gap showing above them and very "
+    "little chin/jaw visible below them; the shoulders appear wide and flattened, like a "
+    "small horizontal shelf below the head, because you are looking down onto their top "
+    "surface; the legs and feet appear short and visually compressed due to the steep "
+    "downward foreshortening. Do NOT draw this as an eye-level face-forward portrait "
+    "with a normal vertical forehead and visible chin -- if the character looks like a "
+    "standing portrait facing the camera at eye level, the angle is WRONG. This is NOT a "
+    "flat 90-degree side profile either (no side-scrolling beat-em-up silhouette).\n\n"
     "Solid flat-color pixel-art shading with a limited color palette and a visible pixel "
     "grid (no smooth gradients, no anti-aliased painterly rendering, no photo-realistic "
     "rendering). Transparent background (no ground, no scenery, no shadow gradient -- "
     "alpha background only). Centered in frame with consistent character scale and "
-    "proportions. Likeness: base the character's face, hair, skin tone, and build "
-    "loosely on the attached reference photo of a real person, but fully stylized as a "
-    "pixel-art game sprite seen from the side -- not photo-realistic, not a front-facing "
-    "portrait."
+    "proportions. Likeness: base the character's face, hair, skin tone, and build on the "
+    "attached reference image of the character, keeping the same anime art style, while "
+    "rendering it as a chibi top-down pixel-art game sprite. Match the reference image's "
+    "hairstyle exactly: short, neat hair that sits close to the head with a small "
+    "side-swept fringe, cropped short at the back and sides -- the hair must NOT extend "
+    "past the nape of the neck or hang down the back of the head. NOT spiky, NOT "
+    "voluminous, NOT long at the back, NOT a tall or poofy anime "
+    "hairstyle. Keep the hair silhouette small and close-cropped like the reference. "
+    "The character wears normal "
+    "clear-lens prescription glasses with a dark/black frame that has a clearly visible "
+    "dark rim outline -- the lenses are clear and see-through, never dark sunglasses, "
+    "tinted lenses, or opaque shades."
 )
 
 STYLE_LOCK_INSTRUCTION = (
-    "You are given two reference images: (1) a photo of a real person's face, used "
-    "only for facial likeness, and (2) an already-approved pixel-art sprite of this "
-    "exact character in an idle pose, which defines the exact art style, color "
-    "palette, proportions, and outline thickness to match exactly. Generate a NEW pose "
-    "of the SAME character matching image (2)'s style precisely, using image (1) only "
-    "for facial likeness reference."
+    "You are given two reference images: (1) a reference image of the character, used "
+    "only for likeness (face, hair, skin tone, build, outfit), and (2) an already-approved "
+    "pixel-art sprite of this exact character in an idle pose, which defines the exact art "
+    "style, color palette, proportions, and outline thickness to match exactly. This "
+    "includes the hair: image (2)'s hair is short, flat, and close-cropped with very little "
+    "thickness above the scalp -- when turning the head to a new angle, keep that exact same "
+    "thin hair volume and silhouette, just rotated. Do NOT inflate the hair into a thicker, "
+    "rounder, dome-shaped, or mushroom-shaped mass just because the head is turned; a turned "
+    "head must look like the same flat haircut from image (2), not a bigger hairstyle. "
+    "Generate a NEW pose of the SAME character matching image (2)'s style precisely, using "
+    "image (1) only for likeness reference."
 )
+
+DIRECTION_PROMPTS: dict[str, str] = {
+    "down": "The character faces the viewer/camera (south), so their face and front of body are visible.",
+    "up": "The character faces away from the viewer/camera (north) for this ENTIRE pose, including during attacks -- they do NOT turn, twist, or rotate back toward the camera even while punching, kicking, or charging energy. Show only the back of their head and body. Their face must NOT be visible at all, not even in partial profile -- punches and kicks are thrown straight ahead, away from the camera, with the back of the head still fully covering the face.",
+    "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible. The hair silhouette must stay exactly as short and close-cropped as the reference idle pose -- do NOT add extra volume, height, or poof to the hair just because the head is turned; it should look like the same flat, neat haircut simply rotated, not a bigger or fluffier hairstyle.",
+}
 
 # Order matters only for the idle-first two-phase workflow in generate_sprites.py.
 POSE_PROMPTS: dict[str, str] = {
     "idle": (
         "Neutral idle stance, relaxed standing pose, arms loosely at sides, weight "
-        "balanced, ready stance, facing right."
+        "balanced, ready stance."
     ),
     "move": (
         "Mid-stride running/walking pose, one leg forward one leg back, dynamic "
-        "running animation key pose, facing right, leaning slightly forward."
+        "running animation key pose, leaning slightly forward."
     ),
     "charge_loop": (
         "Crouched charging stance, knees bent, both hands drawn together at chest or "
-        "waist level glowing with gathering energy, head down in concentration, "
-        "facing right."
+        "waist level glowing with gathering energy, head down in concentration."
     ),
     "release": (
         "Energy blast release pose, both arms thrust forward releasing a burst of "
-        "energy from the hands, dynamic forward lunge, facing right."
+        "energy from the hands, dynamic forward lunge."
     ),
     "hurt": (
         "Recoiling flinch pose from taking a hit, body leaning backward off-balance, "
-        "arms raised defensively, pained expression, facing right."
+        "arms raised defensively, pained expression."
     ),
     "basic_punch_1": (
         "Beginning jab punch, lead arm extending forward at chest height, light "
-        "weight transfer, facing right, first hit of a 3-punch combo (subtle "
-        "extension)."
+        "weight transfer, first hit of a 3-punch combo (subtle extension)."
     ),
     "basic_punch_2": (
         "Second punch of a jab combo, opposite arm extending further forward than "
-        "punch 1, more weight transfer and rotation, facing right, medium extension."
+        "punch 1, more weight transfer and rotation, medium extension."
     ),
     "basic_punch_3": (
         "Final heavy punch of a 3-hit combo, full body rotation, arm fully extended "
-        "forward with maximum reach, strongest pose of the punch combo, facing right."
+        "forward with maximum reach, strongest pose of the punch combo."
     ),
     "basic_kick_1": (
         "Beginning kick, leg starting to lift forward at low height, light "
-        "extension, facing right, first hit of a 3-kick combo."
+        "extension, first hit of a 3-kick combo."
     ),
     "basic_kick_2": (
         "Second kick of a combo, leg extended further forward at mid height, more "
-        "rotation and balance lean, facing right, medium extension."
+        "rotation and balance lean, medium extension."
     ),
     "basic_kick_3": (
         "Final heavy roundhouse-style kick, leg fully extended at high/maximum "
-        "reach, full body commitment and rotation, strongest pose of the kick combo, "
-        "facing right."
+        "reach, full body commitment and rotation, strongest pose of the kick combo."
     ),
     "master_1": (
         "First hit of a powerful master combo: a strong punch with forward lunge, "
-        "more intensity than basic_punch poses, facing right."
+        "more intensity than basic_punch poses."
     ),
     "master_2": (
         "Second hit of the master combo: a strong kick with forward momentum, more "
-        "intensity than basic_kick poses, facing right."
+        "intensity than basic_kick poses."
     ),
     "master_3": (
         "Third hit of the master combo: another strong kick, body coiled for the "
-        "next strike, building intensity, facing right."
+        "next strike, building intensity."
     ),
     "master_4": (
-        "Final finishing blow of the master combo: a massive heavy haymaker punch, "
-        "maximum exaggerated extension and impact energy, dramatic finishing-move "
-        "pose, the most intense and largest pose in the whole set, facing right."
+        "Final finishing blow of the master combo: a massive heavy haymaker punch "
+        "thrown with full-body rotation and weight transfer, dramatic finishing-move "
+        "pose, the most intense pose in the whole set -- but the punching fist and "
+        "hand must stay the SAME normal size as the character's other hand and the "
+        "rest of their body. Do NOT draw an oversized, close-up, or exaggerated "
+        "giant fist; proportions must match every other pose exactly."
     ),
+}
+
+_BASE_POSE_NAMES: list[str] = list(POSE_PROMPTS.keys())
+_DIRECTIONS: list[str] = ["down", "up", "side"]
+
+# Flatten to 45 pose x direction combinations. idle_down comes first so it can serve as
+# the sole two-phase style-lock anchor for all other 44 sprites in generate_sprites.py.
+POSE_PROMPTS = {
+    f"{pose}_{direction}": f"{DIRECTION_PROMPTS[direction]} {POSE_PROMPTS[pose]}"
+    for pose in _BASE_POSE_NAMES
+    for direction in _DIRECTIONS
 }
 
 POSE_NAMES: list[str] = list(POSE_PROMPTS.keys())

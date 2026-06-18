@@ -30,6 +30,16 @@ func play_anim(anim_name: String) -> void:
 	if animated_sprite.sprite_frames and animated_sprite.sprite_frames.has_animation(anim_name):
 		animated_sprite.play(anim_name)
 
+func aim_at_player() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+	var dir: Vector2 = player.global_position - global_position
+	if dir == Vector2.ZERO:
+		return
+	hitbox.aim(dir)
+	animated_sprite.flip_h = dir.x < 0.0
+
 func is_player_in_attack_range() -> bool:
 	var player := get_tree().get_first_node_in_group("player")
 	return player != null and global_position.distance_to(player.global_position) <= attack_range

@@ -3,6 +3,7 @@ class_name Hitbox extends Area2D
 signal hit_landed(target: Node, combo_result: Dictionary)
 
 @export var base_damage: float = 10.0
+@export var reach: float = 14.0
 
 var owner_stats: StatsComponent
 var pending_result: Dictionary = {}
@@ -16,6 +17,13 @@ func enable() -> void:
 
 func disable() -> void:
 	_shape.disabled = true
+
+func aim(dir: Vector2) -> void:
+	if dir == Vector2.ZERO:
+		return
+	var d := dir.normalized()
+	position = d * reach
+	rotation = d.angle()
 
 func _physics_process(_delta: float) -> void:
 	if _shape.disabled:
