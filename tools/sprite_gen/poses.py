@@ -1,4 +1,9 @@
-"""Prompt text for each Player animation pose x direction, used by generate_sprites.py."""
+"""Prompt text for Player animation strips, used by generate_sprites.py.
+
+Each animation+direction generates ONE multi-frame strip in a single Gemini call (see
+SPRITE_REGEN_BRIEF.md Method B) instead of one call per static frame, so frames within an
+animation stay visually consistent with each other.
+"""
 
 STYLE_PREAMBLE = (
     "Pixel art sprite of a video game character, in a steep top-down action-RPG camera "
@@ -12,50 +17,68 @@ STYLE_PREAMBLE = (
     "enlarged, roughly 1/4 to 1/3 of the character's total height -- noticeably bigger "
     "than a real human head-to-body ratio, but the body must still read as a small "
     "person with clearly defined arms, legs, and torso, not a tiny stub-limbed blob.\n\n"
-    "CAMERA ANGLE -- this is also critical, follow it exactly: this is a TOP-DOWN GAME "
-    "SPRITE, not a character portrait or character-select art. The camera is high above "
-    "the character looking down at roughly a 60-75 degree angle from horizontal (much "
-    "closer to a bird's-eye view than eye-level). Concretely: the top of the head reads "
-    "as a flattened oval/dome shape because you are looking down onto the crown of the "
-    "head; the eyes and eyebrows sit low in the face, close to the bottom edge of the "
-    "head shape, with very little forehead-to-hairline gap showing above them and very "
-    "little chin/jaw visible below them; the shoulders appear wide and flattened, like a "
-    "small horizontal shelf below the head, because you are looking down onto their top "
-    "surface; the legs and feet appear short and visually compressed due to the steep "
-    "downward foreshortening. Do NOT draw this as an eye-level face-forward portrait "
-    "with a normal vertical forehead and visible chin -- if the character looks like a "
-    "standing portrait facing the camera at eye level, the angle is WRONG. This is NOT a "
-    "flat 90-degree side profile either (no side-scrolling beat-em-up silhouette).\n\n"
+    "CAMERA ANGLE -- this is also critical, and the single most common mistake to avoid: "
+    "this is a TOP-DOWN GAME SPRITE, not a character portrait, bust shot, or "
+    "character-select art. This is NOT a picture OF the character's face -- it is a "
+    "picture of the character seen from ABOVE. Imagine a camera mounted on the ceiling "
+    "a few meters above the character, tilted down at roughly a 60-75 degree angle "
+    "(much closer to a bird's-eye view straight down than to eye-level). Reference the "
+    "EXACT look of: Chrono Trigger overworld sprites, Secret of Mana overworld sprites, "
+    "Pokemon Gen 3-5 overworld sprites, Stardew Valley character sprites -- in all of "
+    "these, you mostly see the TOP of the character's head and hair, not their face. "
+    "Concretely, in the final image: the crown/top of the head and hair occupy the "
+    "majority of the head shape, reading as a flattened, wide oval/dome; the hairline "
+    "sits very high, near the very top of the head shape; the face is compressed into a "
+    "small band near the BOTTOM of the head, with the eyes sitting low, close to the "
+    "bottom edge of the head, and almost no bare forehead skin visible between the "
+    "eyebrows and the hairline; the chin and jaw are barely visible, foreshortened "
+    "almost out of view, with the head appearing to sit nearly directly on the "
+    "shoulders with little to no visible neck; the shoulders read as a wide, flat "
+    "horizontal bar/shelf because you are looking down onto their top surface, not "
+    "their front; the legs and feet appear short and visually compressed due to the "
+    "steep downward foreshortening. Do NOT draw a normal face-forward head with a "
+    "visible vertical forehead, centered eyes, and a visible chin -- that is an "
+    "eye-level portrait angle and is WRONG for this sprite. This is also NOT a flat "
+    "90-degree side profile (no side-scrolling beat-em-up silhouette).\n\n"
     "Solid flat-color pixel-art shading with a limited color palette and a visible pixel "
     "grid (no smooth gradients, no anti-aliased painterly rendering, no photo-realistic "
-    "rendering). Transparent background (no ground, no scenery, no shadow gradient -- "
-    "alpha background only). Centered in frame with consistent character scale and "
-    "proportions. Likeness: base the character's face, hair, skin tone, and build on the "
-    "attached reference image of the character, keeping the same anime art style, while "
-    "rendering it as a chibi top-down pixel-art game sprite. Match the reference image's "
-    "hairstyle exactly: short, neat hair that sits close to the head with a small "
-    "side-swept fringe, cropped short at the back and sides -- the hair must NOT extend "
-    "past the nape of the neck or hang down the back of the head. NOT spiky, NOT "
-    "voluminous, NOT long at the back, NOT a tall or poofy anime "
-    "hairstyle. Keep the hair silhouette small and close-cropped like the reference. "
-    "The character wears normal "
-    "clear-lens prescription glasses with a dark/black frame that has a clearly visible "
-    "dark rim outline -- the lenses are clear and see-through, never dark sunglasses, "
-    "tinted lenses, or opaque shades."
+    "rendering). Centered in frame with consistent character scale and proportions. "
+    "Likeness: base the character's face, hair, skin tone, and build on the attached "
+    "reference image of the character, keeping the same anime art style, while rendering "
+    "it as a chibi top-down pixel-art game sprite. Match the reference image's hairstyle "
+    "exactly: short, neat hair that sits close to the head with a small side-swept fringe, "
+    "cropped short at the back and sides -- the hair must NOT extend past the nape of the "
+    "neck or hang down the back of the head. NOT spiky, NOT voluminous, NOT long at the "
+    "back, NOT a tall or poofy anime hairstyle. Keep the hair silhouette small and "
+    "close-cropped like the reference. The character wears normal clear-lens prescription "
+    "glasses with a dark/black frame that has a clearly visible dark rim outline -- the "
+    "lenses are clear and see-through, never dark sunglasses, tinted lenses, or opaque "
+    "shades."
 )
 
 STYLE_LOCK_INSTRUCTION = (
     "You are given two reference images: (1) a reference image of the character, used "
     "only for likeness (face, hair, skin tone, build, outfit), and (2) an already-approved "
-    "pixel-art sprite of this exact character in an idle pose, which defines the exact art "
-    "style, color palette, proportions, and outline thickness to match exactly. This "
-    "includes the hair: image (2)'s hair is short, flat, and close-cropped with very little "
-    "thickness above the scalp -- when turning the head to a new angle, keep that exact same "
-    "thin hair volume and silhouette, just rotated. Do NOT inflate the hair into a thicker, "
-    "rounder, dome-shaped, or mushroom-shaped mass just because the head is turned; a turned "
-    "head must look like the same flat haircut from image (2), not a bigger hairstyle. "
-    "Generate a NEW pose of the SAME character matching image (2)'s style precisely, using "
-    "image (1) only for likeness reference."
+    "turnaround sheet of this exact character in this exact top-down pixel-art style, which "
+    "defines the exact art style, color palette, proportions, scale, and outline thickness "
+    "to match precisely. This includes the hair: image (2)'s hair is short, flat, and "
+    "close-cropped with very little thickness above the scalp -- keep that exact same thin "
+    "hair volume and silhouette in every frame you generate. Do NOT inflate the hair into a "
+    "thicker, rounder, dome-shaped, or mushroom-shaped mass. Generate the requested NEW "
+    "strip of the SAME character matching image (2)'s style, scale, and baseline precisely, "
+    "using image (1) only for likeness reference."
+)
+
+STRIP_STYLE_PREAMBLE = (
+    "Output a single horizontal strip image containing exactly {n} evenly-spaced, "
+    "equal-width cells side by side, left to right, one animation frame per cell. The "
+    "character must be the same size, same scale, and same baseline (feet at the same "
+    "height) in every cell -- only the pose changes between cells, not the character's "
+    "scale or vertical position. Fill the ENTIRE background of every cell with a single "
+    "solid flat magenta color (#FF00FF, RGB 255,0,255) -- no gradient, no shadow, no "
+    "ground line, no scenery, no cell borders or dividers, no text or labels. The magenta "
+    "background color must never appear anywhere on the character itself (skin, hair, "
+    "clothes, accessories)."
 )
 
 DIRECTION_PROMPTS: dict[str, str] = {
@@ -64,83 +87,158 @@ DIRECTION_PROMPTS: dict[str, str] = {
     "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible. The hair silhouette must stay exactly as short and close-cropped as the reference idle pose -- do NOT add extra volume, height, or poof to the hair just because the head is turned; it should look like the same flat, neat haircut simply rotated, not a bigger or fluffier hairstyle.",
 }
 
-# Order matters only for the idle-first two-phase workflow in generate_sprites.py.
-POSE_PROMPTS: dict[str, str] = {
+ANIMATION_FRAME_COUNTS: dict[str, int] = {
+    "idle": 4,
+    "move": 4,
+    "charge_loop": 4,
+    "release": 3,
+    "hurt": 3,
+    "basic_punch_1": 3,
+    "basic_punch_2": 3,
+    "basic_punch_3": 3,
+    "basic_kick_1": 3,
+    "basic_kick_2": 3,
+    "basic_kick_3": 3,
+    "master_1": 3,
+    "master_2": 3,
+    "master_3": 3,
+    "master_4": 3,
+}
+
+ANIMATION_ALIGN: dict[str, str] = {
+    "hurt": "center",
+}
+DEFAULT_ALIGN = "feet"
+
+STRIP_POSE_PROMPTS: dict[str, str] = {
     "idle": (
-        "Neutral idle stance, relaxed standing pose, arms loosely at sides, weight "
-        "balanced, ready stance."
+        "A seamless looping idle breathing cycle in 4 frames: neutral standing stance, "
+        "arms loosely at sides, weight balanced. Frame 1: rest pose. Frame 2: subtle "
+        "inhale, chest/shoulders rise very slightly. Frame 3: rest pose again (same as "
+        "frame 1). Frame 4: subtle exhale/settle, a tiny weight shift. The motion must be "
+        "small and subtle -- this is a calm idle loop, not an action pose -- and frame 4 "
+        "must flow naturally back into frame 1 for a seamless loop."
     ),
     "move": (
-        "Mid-stride running/walking pose, one leg forward one leg back, dynamic "
-        "running animation key pose, leaning slightly forward."
+        "A seamless looping walk/run cycle in 4 frames covering one full stride: frame 1 "
+        "right leg forward contact, frame 2 passing position with legs crossing under the "
+        "body, frame 3 left leg forward contact (mirror of frame 1), frame 4 passing "
+        "position again (mirror of frame 2). Arms swing opposite to the legs. The cycle "
+        "must loop seamlessly from frame 4 back to frame 1."
     ),
     "charge_loop": (
-        "Crouched charging stance, knees bent, both hands drawn together at chest or "
-        "waist level glowing with gathering energy, head down in concentration."
+        "A seamless looping energy-charging cycle in 4 frames: crouched charging stance, "
+        "knees bent, both hands drawn together at chest or waist level gathering energy, "
+        "head down in concentration. Frames 1 and 3 show a smaller, dimmer gathered energy "
+        "glow; frames 2 and 4 show a slightly larger, brighter pulse of the same glow -- a "
+        "subtle pulsing animation, with the character's pose itself staying essentially "
+        "still. The cycle must loop seamlessly from frame 4 back to frame 1."
     ),
     "release": (
-        "Energy blast release pose, both arms thrust forward releasing a burst of "
-        "energy from the hands, dynamic forward lunge."
+        "A 3-frame energy blast release: frame 1 anticipation, both hands pulled back with "
+        "energy gathered just before release; frame 2 full release, both arms thrust "
+        "forward unleashing a burst of energy from the hands, dynamic forward lunge; frame "
+        "3 brief follow-through, arms still extended forward as the burst fades."
     ),
     "hurt": (
-        "Recoiling flinch pose from taking a hit, body leaning backward off-balance, "
-        "arms raised defensively, pained expression."
+        "A 3-frame hit-reaction flinch: frame 1 impact, body jolting backward off-balance, "
+        "pained expression; frame 2 peak recoil, body leaning further back, arms raised "
+        "defensively; frame 3 starting to recover, body beginning to straighten back up."
     ),
     "basic_punch_1": (
-        "Beginning jab punch, lead arm extending forward at chest height, light "
-        "weight transfer, first hit of a 3-punch combo (subtle extension)."
+        "A 3-frame beginning jab punch: frame 1 anticipation wind-up with lead arm pulled "
+        "back slightly; frame 2 full extension/contact, lead arm extended forward at chest "
+        "height with light weight transfer; frame 3 brief follow-through, arm starting to "
+        "draw back. First, lightest hit of a 3-punch combo."
     ),
     "basic_punch_2": (
-        "Second punch of a jab combo, opposite arm extending further forward than "
-        "punch 1, more weight transfer and rotation, medium extension."
+        "A 3-frame second punch of the combo: frame 1 anticipation wind-up, opposite arm "
+        "pulled back with more rotation than punch 1; frame 2 full extension/contact, arm "
+        "extending further forward than punch 1 with more weight transfer and body "
+        "rotation; frame 3 brief follow-through. Medium hit of a 3-punch combo."
     ),
     "basic_punch_3": (
-        "Final heavy punch of a 3-hit combo, full body rotation, arm fully extended "
-        "forward with maximum reach, strongest pose of the punch combo."
+        "A 3-frame final heavy punch of the combo: frame 1 anticipation wind-up with full "
+        "body coil; frame 2 full extension/contact, full body rotation, arm fully extended "
+        "forward with maximum reach -- strongest pose of the punch combo; frame 3 brief "
+        "follow-through, body still rotated from the strike."
     ),
     "basic_kick_1": (
-        "Beginning kick, leg starting to lift forward at low height, light "
-        "extension, first hit of a 3-kick combo."
+        "A 3-frame beginning kick: frame 1 anticipation, leg starting to lift with weight "
+        "shifting onto the standing leg; frame 2 full extension/contact, leg extended "
+        "forward at low height, light extension; frame 3 brief follow-through, leg starting "
+        "to lower. First, lightest hit of a 3-kick combo."
     ),
     "basic_kick_2": (
-        "Second kick of a combo, leg extended further forward at mid height, more "
-        "rotation and balance lean, medium extension."
+        "A 3-frame second kick of the combo: frame 1 anticipation, leg lifting higher with "
+        "more body rotation than kick 1; frame 2 full extension/contact, leg extended "
+        "further forward at mid height with more rotation and balance lean; frame 3 brief "
+        "follow-through. Medium hit of a 3-kick combo."
     ),
     "basic_kick_3": (
-        "Final heavy roundhouse-style kick, leg fully extended at high/maximum "
-        "reach, full body commitment and rotation, strongest pose of the kick combo."
+        "A 3-frame final heavy roundhouse-style kick: frame 1 anticipation, full body coil "
+        "and weight shift; frame 2 full extension/contact, leg fully extended at "
+        "high/maximum reach with full body commitment and rotation -- strongest pose of the "
+        "kick combo; frame 3 brief follow-through, body still rotated from the strike."
     ),
     "master_1": (
-        "First hit of a powerful master combo: a strong punch with forward lunge, "
-        "more intensity than basic_punch poses."
+        "A 3-frame powerful master combo first hit: frame 1 anticipation wind-up with more "
+        "intensity than basic_punch poses; frame 2 full extension/contact, a strong punch "
+        "with forward lunge; frame 3 brief follow-through."
     ),
     "master_2": (
-        "Second hit of the master combo: a strong kick with forward momentum, more "
-        "intensity than basic_kick poses."
+        "A 3-frame master combo second hit: frame 1 anticipation wind-up with more "
+        "intensity than basic_kick poses; frame 2 full extension/contact, a strong kick "
+        "with forward momentum; frame 3 brief follow-through."
     ),
     "master_3": (
-        "Third hit of the master combo: another strong kick, body coiled for the "
-        "next strike, building intensity."
+        "A 3-frame master combo third hit: frame 1 anticipation, body coiling for another "
+        "strike; frame 2 full extension/contact, another strong kick with building "
+        "intensity; frame 3 brief follow-through, body still coiled from the strike."
     ),
     "master_4": (
-        "Final finishing blow of the master combo: a massive heavy haymaker punch "
-        "thrown with full-body rotation and weight transfer, dramatic finishing-move "
-        "pose, the most intense pose in the whole set -- but the punching fist and "
-        "hand must stay the SAME normal size as the character's other hand and the "
-        "rest of their body. Do NOT draw an oversized, close-up, or exaggerated "
-        "giant fist; proportions must match every other pose exactly."
+        "A 3-frame master combo finishing blow: frame 1 anticipation, full-body wind-up for "
+        "the biggest hit in the set; frame 2 full extension/contact, a massive heavy "
+        "haymaker punch thrown with full-body rotation and weight transfer, dramatic "
+        "finishing-move pose, the most intense pose in the whole set; frame 3 brief "
+        "follow-through. In every frame, the punching fist and hand must stay the SAME "
+        "normal size as the character's other hand and the rest of their body -- do NOT "
+        "draw an oversized, close-up, or exaggerated giant fist; proportions must match "
+        "every other pose exactly."
     ),
 }
 
-_BASE_POSE_NAMES: list[str] = list(POSE_PROMPTS.keys())
+TURNAROUND_PROMPT = (
+    f"{STYLE_PREAMBLE}\n\n"
+    "Output a single horizontal turnaround reference strip containing exactly 3 "
+    "evenly-spaced, equal-width cells side by side, left to right: cell 1 = character "
+    "facing the viewer/camera (south, facing down), cell 2 = character facing away from "
+    "the viewer/camera (north, facing up, back of head and body visible, face hidden), "
+    "cell 3 = character turned to face screen-right (east) shown from a 3/4 angle with one "
+    "side of their body and face profile visible. All 3 cells show the exact SAME neutral "
+    "idle standing pose (arms loosely at sides, weight balanced), the exact same character "
+    "scale, and the exact same baseline (feet at the same height) -- only the facing "
+    "direction changes between cells. Fill the ENTIRE background of every cell with a "
+    "single solid flat magenta color (#FF00FF, RGB 255,0,255) -- no gradient, no shadow, no "
+    "ground line, no scenery, no cell borders or dividers, no text or labels. The magenta "
+    "background color must never appear anywhere on the character itself."
+)
+TURNAROUND_DIRECTIONS: list[str] = ["down", "up", "side"]
+
+_BASE_POSE_NAMES: list[str] = list(STRIP_POSE_PROMPTS.keys())
 _DIRECTIONS: list[str] = ["down", "up", "side"]
 
-# Flatten to 45 pose x direction combinations. idle_down comes first so it can serve as
-# the sole two-phase style-lock anchor for all other 44 sprites in generate_sprites.py.
-POSE_PROMPTS = {
-    f"{pose}_{direction}": f"{DIRECTION_PROMPTS[direction]} {POSE_PROMPTS[pose]}"
+STRIP_PROMPTS: dict[str, str] = {
+    f"{pose}_{direction}": (
+        f"{STYLE_PREAMBLE}\n\n"
+        f"{STRIP_STYLE_PREAMBLE.format(n=ANIMATION_FRAME_COUNTS[pose])}\n\n"
+        f"{DIRECTION_PROMPTS[direction]}\n\n"
+        f"{STRIP_POSE_PROMPTS[pose]}"
+    )
     for pose in _BASE_POSE_NAMES
     for direction in _DIRECTIONS
 }
 
-POSE_NAMES: list[str] = list(POSE_PROMPTS.keys())
+STRIP_NAMES: list[str] = list(STRIP_PROMPTS.keys())
+
+CANARY_NAMES: list[str] = ["idle_down", "move_side"]
