@@ -243,6 +243,15 @@ TURNAROUND_PROMPT = (
 )
 TURNAROUND_DIRECTIONS: list[str] = ["down", "up", "side"]
 
+STYLE_RECAP = (
+    "Final reminder before finalizing every cell: no matter how dynamic or energetic this "
+    "particular motion is, every cell must keep the EXACT same steep top-down camera angle, "
+    "the same small dome-shaped close-cropped hair silhouette, and the same chibi "
+    "proportions as the approved turnaround reference (image 2) -- a bigger or fluffier "
+    "hairstyle, more exposed forehead/face, or a more face-forward eye-level portrait angle "
+    "is wrong, even for a fast walk, a punch, or any other high-energy pose."
+)
+
 _BASE_POSE_NAMES: list[str] = list(STRIP_POSE_PROMPTS.keys())
 _DIRECTIONS: list[str] = ["down", "up", "side"]
 
@@ -251,7 +260,8 @@ STRIP_PROMPTS: dict[str, str] = {
         f"{STYLE_PREAMBLE}\n\n"
         f"{STRIP_STYLE_PREAMBLE.format(n=ANIMATION_FRAME_COUNTS[pose])}\n\n"
         f"{DIRECTION_PROMPTS[direction]}\n\n"
-        f"{STRIP_POSE_PROMPTS[pose]}"
+        f"{STRIP_POSE_PROMPTS[pose]}\n\n"
+        f"{STYLE_RECAP}"
     )
     for pose in _BASE_POSE_NAMES
     for direction in _DIRECTIONS
