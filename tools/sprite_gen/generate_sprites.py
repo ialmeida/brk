@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate 16-bit pixel-art Player sprites via Gemini's image model ("nano banana").
+"""Generate 16-bit pixel-art Player sprites via Gemini's image model ("Nano Banana Pro").
 
 Reads GEMINI_API_KEY from the environment only -- never pass it as a CLI flag.
 
@@ -23,7 +23,7 @@ from PIL import Image
 from poses import POSE_NAMES, POSE_PROMPTS, STYLE_LOCK_INSTRUCTION, STYLE_PREAMBLE
 from postprocess import natural_scale, process_image
 
-DEFAULT_MODEL = "gemini-2.5-flash-image"
+DEFAULT_MODEL = "gemini-3-pro-image"
 MAX_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 3
 
@@ -74,6 +74,8 @@ def extract_image_from_response(response) -> Image.Image:
 
 def generate_one(client, model: str, prompt: str, reference_img: Image.Image,
                   base_img: Image.Image | None) -> Image.Image:
+    from google.genai import types
+
     contents: list = [reference_img]
     if base_img is not None:
         contents.append(base_img)
@@ -81,10 +83,12 @@ def generate_one(client, model: str, prompt: str, reference_img: Image.Image,
     else:
         contents.append(f"{STYLE_PREAMBLE}\n\n{prompt}")
 
+    config = types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"])
+
     last_error: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 2):
         try:
-            response = client.models.generate_content(model=model, contents=contents)
+            response = client.models.generate_content(model=model, contents=contents, config=config)
             return extract_image_from_response(response)
         except Exception as exc:  # noqa: BLE001 - report and retry, don't crash the whole batch
             last_error = exc

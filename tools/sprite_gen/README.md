@@ -1,6 +1,6 @@
 # Player sprite generator
 
-One-off authoring tool that calls Gemini's image model ("nano banana") directly to
+One-off authoring tool that calls Gemini's image model ("Nano Banana Pro") directly to
 generate the 45 Player animation sprites (15 poses x 3 directions: down/up/side), then
 post-processes them into clean pixel art for `actors/player/Player.tscn`. Not used at
 runtime by the game.
@@ -53,6 +53,12 @@ export GEMINI_API_KEY="..."   # never write this to a file
 - Never place your reference image inside this repo, even temporarily.
 - `assets/sprites/player/raw/` holds unprocessed model output (gitignored, local-only).
   Only `assets/sprites/player/processed/` is committed.
-- If `--model` (default `gemini-2.5-flash-image`, the GA "nano banana" model) returns a
-  model-not-found error, run `client.models.list()` to see what's currently available --
-  newer options as of writing include `gemini-3.1-flash-image` and `gemini-3-pro-image`.
+- Default model is `gemini-3-pro-image` (the GA "Nano Banana Pro" / Gemini 3 Pro Image
+  model). Use `--model gemini-2.5-flash-image` to fall back to the older "Nano Banana"
+  model if needed. Do not use `-preview` model id variants (e.g.
+  `gemini-3-pro-image-preview`) -- preview ids get deprecated and retired.
+- Nano Banana Pro may require a paid/billing-enabled API key (not guaranteed on the
+  free tier) -- if you see a quota or billing error, check your Google AI Studio
+  project's plan.
+- If `--model` returns a model-not-found error, run `client.models.list()` to see
+  what's currently available.
