@@ -87,7 +87,7 @@ STRIP_STYLE_PREAMBLE = (
 DIRECTION_PROMPTS: dict[str, str] = {
     "down": "The character faces the viewer/camera (south), so their face and front of body are visible. This is still the same steep top-down camera angle as every other direction, NOT an eye-level portrait shot -- the top of the head and hair must still occupy most of the head shape (a rounded dome from above), the hairline sits high, and only a small compressed band of face shows near the bottom of the head with the eyes low and almost no bare forehead. Do NOT widen the visible face or shrink the hair just because the character is facing forward.",
     "up": "The character faces away from the viewer/camera (north) for this ENTIRE pose, including during attacks -- they do NOT turn, twist, or rotate back toward the camera even while punching, kicking, or charging energy. Show only the back of their head and body. Their face must NOT be visible at all, not even in partial profile -- punches and kicks are thrown straight ahead, away from the camera, with the back of the head still fully covering the face.",
-    "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible. The hair silhouette must stay exactly as short and close-cropped as the reference idle pose -- do NOT add extra volume, height, or poof to the hair just because the head is turned; it should look like the same flat, neat haircut simply rotated, not a bigger or fluffier hairstyle.",
+    "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible, for this ENTIRE pose and in EVERY frame -- the head stays turned at this same profile angle throughout, even as the legs and arms move through the stride or attack. Do NOT let the head swing back toward a frontal, both-eyes-visible view in any frame just because the body is mid-motion; only one eye and one side of the glasses/face should ever be visible, the same way in every frame. The hair silhouette must stay exactly as short and close-cropped as the reference idle pose -- do NOT add extra volume, height, or poof to the hair just because the head is turned; it should look like the same flat, neat haircut simply rotated, not a bigger or fluffier hairstyle.",
 }
 
 ANIMATION_FRAME_COUNTS: dict[str, int] = {
@@ -249,7 +249,13 @@ STYLE_RECAP = (
     "the same small dome-shaped close-cropped hair silhouette, and the same chibi "
     "proportions as the approved turnaround reference (image 2) -- a bigger or fluffier "
     "hairstyle, more exposed forehead/face, or a more face-forward eye-level portrait angle "
-    "is wrong, even for a fast walk, a punch, or any other high-energy pose."
+    "is wrong, even for a fast walk, a punch, or any other high-energy pose. This also means "
+    "the head-to-body size ratio: measure image (2)'s head height against its total "
+    "standing height and match that SAME ratio exactly -- the head is large and the body is "
+    "short and stocky, roughly chibi-doll proportions, NOT a normal or slender human build. "
+    "Do NOT shrink the head or lengthen/slim the torso and legs just because the character "
+    "is mid-stride or mid-action -- a longer-legged, smaller-headed, more normally-proportioned "
+    "figure is wrong even if the motion itself is otherwise correct."
 )
 
 _BASE_POSE_NAMES: list[str] = list(STRIP_POSE_PROMPTS.keys())
