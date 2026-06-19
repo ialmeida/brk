@@ -57,16 +57,19 @@ STYLE_PREAMBLE = (
 )
 
 STYLE_LOCK_INSTRUCTION = (
-    "You are given two reference images: (1) a reference image of the character, used "
-    "only for likeness (face, hair, skin tone, build, outfit), and (2) an already-approved "
-    "turnaround sheet of this exact character in this exact top-down pixel-art style, which "
-    "defines the exact art style, color palette, proportions, scale, and outline thickness "
-    "to match precisely. This includes the hair: image (2)'s hair is short, flat, and "
-    "close-cropped with very little thickness above the scalp -- keep that exact same thin "
-    "hair volume and silhouette in every frame you generate. Do NOT inflate the hair into a "
-    "thicker, rounder, dome-shaped, or mushroom-shaped mass. Generate the requested NEW "
-    "strip of the SAME character matching image (2)'s style, scale, and baseline precisely, "
-    "using image (1) only for likeness reference."
+    "You are given two reference images: (1) a reference image of the character, a normal "
+    "eye-level photo used ONLY for likeness -- face shape, skin tone, glasses, hair color, "
+    "outfit colors. Image (1) is NOT a camera-angle or silhouette reference; ignore its "
+    "eye-level framing entirely. (2) an already-approved turnaround sheet of this exact "
+    "character in this exact top-down pixel-art style -- this is the ONLY ground truth for "
+    "camera angle, head/hair silhouette, body proportions, color palette, scale, and outline "
+    "thickness. Match image (2) precisely, including its hair: because of the steep top-down "
+    "camera angle, image (2)'s hair correctly reads as a rounded, dome-shaped mass covering "
+    "most of the head, with almost no face visible beneath it -- that dome shape is correct "
+    "and required, NOT a mistake to fix. Do NOT flatten the hair or revert to an eye-level "
+    "portrait angle with more face showing just because image (1) is a normal front-facing "
+    "photo. Generate the requested NEW strip of the SAME character matching image (2)'s "
+    "camera angle, style, scale, and baseline precisely, using image (1) only for likeness."
 )
 
 STRIP_STYLE_PREAMBLE = (
@@ -82,7 +85,7 @@ STRIP_STYLE_PREAMBLE = (
 )
 
 DIRECTION_PROMPTS: dict[str, str] = {
-    "down": "The character faces the viewer/camera (south), so their face and front of body are visible.",
+    "down": "The character faces the viewer/camera (south), so their face and front of body are visible. This is still the same steep top-down camera angle as every other direction, NOT an eye-level portrait shot -- the top of the head and hair must still occupy most of the head shape (a rounded dome from above), the hairline sits high, and only a small compressed band of face shows near the bottom of the head with the eyes low and almost no bare forehead. Do NOT widen the visible face or shrink the hair just because the character is facing forward.",
     "up": "The character faces away from the viewer/camera (north) for this ENTIRE pose, including during attacks -- they do NOT turn, twist, or rotate back toward the camera even while punching, kicking, or charging energy. Show only the back of their head and body. Their face must NOT be visible at all, not even in partial profile -- punches and kicks are thrown straight ahead, away from the camera, with the back of the head still fully covering the face.",
     "side": "The character is turned to face screen-right (east), shown from a 3/4 angle so one side of their body and face profile are visible. The hair silhouette must stay exactly as short and close-cropped as the reference idle pose -- do NOT add extra volume, height, or poof to the hair just because the head is turned; it should look like the same flat, neat haircut simply rotated, not a bigger or fluffier hairstyle.",
 }
