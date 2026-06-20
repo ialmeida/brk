@@ -2,9 +2,9 @@
 consistently-scaled, palette-snapped pixel-art frames.
 
 Pipeline per strip (see SPRITE_REGEN_BRIEF.md): key magenta -> harden alpha -> slice into
-cells -> compute one scale factor for the whole strip from the median cell silhouette
-height -> per cell: Lanczos downscale -> re-harden alpha -> snap to palette -> despeckle
--> recenter on a fixed canvas.
+cells -> drop any disconnected bleed-through blob per cell -> compute one scale factor for
+the whole strip from the median cell silhouette height -> per cell: Lanczos downscale ->
+re-harden alpha -> snap to palette -> despeckle -> recenter on a fixed canvas.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from collections import Counter
 
 import numpy as np
 from PIL import Image
+from scipy import ndimage
 
 from palette import RGB
 
@@ -118,6 +119,28 @@ def trim_letterbox_margin(img: Image.Image, max_margin_frac: float = 0.35) -> Im
     return Image.fromarray(arr, "RGBA")
 
 
+def keep_largest_component(cell: Image.Image) -> Image.Image:
+    """Drop every connected blob of opaque pixels except the largest one.
+
+    A wide kick/punch pose occasionally extends past its own cell boundary in the raw
+    Gemini strip, so slice_strip() picks up a thin sliver of the neighboring cell's pose --
+    disconnected from this cell's actual character, but still opaque after keying. The
+    real silhouette is always a single connected blob, so keeping only the largest one
+    removes that bleed-through without touching legitimate content.
+    """
+    arr = np.array(cell.convert("RGBA"), dtype=np.uint8)
+    opaque = arr[..., 3] > 0
+    if not opaque.any():
+        return cell
+    labeled, num = ndimage.label(opaque)
+    if num <= 1:
+        return cell
+    sizes = ndimage.sum(opaque, labeled, index=np.arange(1, num + 1))
+    largest = int(np.argmax(sizes)) + 1
+    arr[..., 3] = np.where(labeled == largest, arr[..., 3], 0)
+    return Image.fromarray(arr, "RGBA")
+
+
 def key_out_background(img: Image.Image, key_color: RGB,
                         threshold: int = KEY_COLOR_THRESHOLD) -> Image.Image:
     arr = np.array(img.convert("RGBA"), dtype=np.int32)
@@ -218,6 +241,7 @@ def process_strip(raw_strip: Image.Image, n_cells: int, target_char_height: int,
     keyed = reharden_alpha(key_out_background(raw_strip, key_color))
     cells = slice_strip(keyed, n_cells)
     cells = [trim_letterbox_margin(cell) for cell in cells]
+    cells = [keep_largest_component(cell) for cell in cells]
     scale = strip_scale_factor(cells, target_char_height) * scale_mult
 
     def render(scale: float) -> list[Image.Image]:
