@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://components/Hitbox.gd" id="1"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hitbox"]
-size = Vector2(20, 16)
+size = Vector2(19.0, 15.0)
 
 [node name="Hitbox" type="Area2D"]
 collision_layer = 8

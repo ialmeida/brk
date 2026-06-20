@@ -25,3 +25,5 @@ assets/sprites/player/raw/
 *.reference.*
 __pycache__/
 *.pyc
+tools/sprite_gen/reference/turnaround_raw.png
+tools/sprite_gen/qa_sheets/
