@@ -10,6 +10,7 @@ height -> per cell: Lanczos downscale -> re-harden alpha -> snap to palette -> d
 from __future__ import annotations
 
 import statistics
+from collections import Counter
 
 import numpy as np
 from PIL import Image
@@ -44,6 +45,77 @@ def sample_background_color(img: Image.Image, border: int = BORDER_SAMPLE_PX) ->
 def looks_like_magenta_key(color: RGB) -> bool:
     r, g, b = color
     return (r - g) > 60 and (b - g) > 60
+
+
+def detect_key_color(img: Image.Image, border: int = BORDER_SAMPLE_PX) -> RGB:
+    """Find the rendered magenta key color, robust to letterbox margins.
+
+    Gemini occasionally pads a strip with a solid white or black letterbox margin around
+    the actual magenta-keyed content (rather than filling every pixel outside the
+    character with magenta). When that happens the thin border band sampled by
+    sample_background_color() lands on the margin instead of the magenta, so scan the
+    most frequent colors in the whole image and pick the first one that looks
+    magenta-ish -- magenta is always near the top of that ranking even when a margin or
+    an inter-cell gutter outnumbers it pixel-for-pixel.
+    """
+    arr = np.array(img.convert("RGB"), dtype=np.uint8)
+    quantized = (arr[::4, ::4].reshape(-1, 3) // 8 * 8)
+    for color, _ in Counter(map(tuple, quantized)).most_common(20):
+        candidate = (int(color[0]), int(color[1]), int(color[2]))
+        if looks_like_magenta_key(candidate):
+            return candidate
+    return sample_background_color(img, border)
+
+
+def _leading_margin_depth(is_transparent_rows: np.ndarray, limit: int,
+                           min_transparent_fraction: float = 0.02) -> int:
+    """How many leading rows (or columns) are almost entirely opaque (no real background)."""
+    depth = 0
+    for i in range(limit):
+        if is_transparent_rows[i].mean() > min_transparent_fraction:
+            break
+        depth += 1
+    return depth
+
+
+def trim_letterbox_margin(img: Image.Image, max_margin_frac: float = 0.35) -> Image.Image:
+    """Zero the alpha of a solid letterbox margin padded around one cell's 4 edges.
+
+    Gemini occasionally pads a strip with a uniform white/black border around the actual
+    magenta-keyed content instead of filling all the way to the edge -- either as an outer
+    margin around the whole composite, or as a gutter between cells. Call this per cell,
+    after slicing, so both kinds land in the same place: a leading band with essentially no
+    transparent pixels at one of this cell's own 4 edges -- by this point the cell has
+    already been keyed and hardened, so a margin (whatever color it rendered as) is still
+    fully opaque while real background is already transparent. Scan inward from each edge
+    and blank any such band, capped at max_margin_frac of that dimension so this can never
+    reach into a cell's actual content -- a real character pose always has plenty of
+    transparent background sharing its row/column within the same cell, even mid-kick or
+    mid-punch. Using the cell's own alpha (rather than re-testing RGB distance to the key
+    color with a separate, looser threshold) also catches the faint antialiased seam this
+    margin leaves where it blends into the true background -- those pixels are too far from
+    the key color to have been cleared by the original keying threshold, so a looser
+    color-distance check here would stop the scan one pixel short and leave a thin opaque
+    sliver spanning the cell's full height or width.
+    """
+    arr = np.array(img.convert("RGBA"), dtype=np.uint8)
+    h, w = arr.shape[:2]
+    is_transparent = arr[..., 3] == 0
+
+    top = _leading_margin_depth(is_transparent, int(h * max_margin_frac))
+    bottom = _leading_margin_depth(is_transparent[::-1], int(h * max_margin_frac))
+    left = _leading_margin_depth(np.transpose(is_transparent, (1, 0)), int(w * max_margin_frac))
+    right = _leading_margin_depth(np.transpose(is_transparent, (1, 0))[::-1], int(w * max_margin_frac))
+
+    if top:
+        arr[:top, :, 3] = 0
+    if bottom:
+        arr[h - bottom:, :, 3] = 0
+    if left:
+        arr[:, :left, 3] = 0
+    if right:
+        arr[:, w - right:, 3] = 0
+    return Image.fromarray(arr, "RGBA")
 
 
 def key_out_background(img: Image.Image, key_color: RGB,
@@ -137,7 +209,7 @@ def process_strip(raw_strip: Image.Image, n_cells: int, target_char_height: int,
                    canvas_w: int, canvas_h: int, baseline_y: int, palette: list[RGB],
                    align: str = "feet", offset: tuple[int, int] = (0, 0),
                    scale_mult: float = 1.0) -> tuple[list[Image.Image], RGB]:
-    key_color = sample_background_color(raw_strip)
+    key_color = detect_key_color(raw_strip)
     if not looks_like_magenta_key(key_color):
         raise ValueError(
             f"Sampled background color {key_color} doesn't look like a magenta key -- "
@@ -145,12 +217,25 @@ def process_strip(raw_strip: Image.Image, n_cells: int, target_char_height: int,
 
     keyed = reharden_alpha(key_out_background(raw_strip, key_color))
     cells = slice_strip(keyed, n_cells)
+    cells = [trim_letterbox_margin(cell) for cell in cells]
     scale = strip_scale_factor(cells, target_char_height) * scale_mult
 
+    def render(scale: float) -> list[Image.Image]:
+        return [reharden_alpha(lanczos_downscale(cell, scale)) for cell in cells]
+
+    rendered = render(scale)
+    achieved = [h for h in (cell_silhouette_height(c) for c in rendered) if h > 0]
+    if achieved:
+        # Lanczos softens a silhouette's edges more at the extreme downscale ratios this
+        # pipeline runs (raw cells are >1000px tall, target is ~50px), and re-hardening
+        # that soft edge at a fixed threshold trims off more height than the pre-resize
+        # bbox predicted. Re-measure what the naive scale actually produced and correct
+        # for it in one calibration pass, rather than guessing a fixed fudge factor.
+        scale *= target_char_height / statistics.median(achieved)
+        rendered = render(scale)
+
     frames = []
-    for cell in cells:
-        scaled = lanczos_downscale(cell, scale)
-        scaled = reharden_alpha(scaled)
+    for scaled in rendered:
         scaled = snap_to_palette(scaled, palette)
         scaled = despeckle(scaled)
         frames.append(recenter_on_canvas(scaled, canvas_w, canvas_h, baseline_y,
