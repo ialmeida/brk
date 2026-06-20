@@ -3,7 +3,7 @@ class_name Hitbox extends Area2D
 signal hit_landed(target: Node, combo_result: Dictionary)
 
 @export var base_damage: float = 10.0
-@export var reach: float = 14.0
+@export var reach: float = 13.0
 
 var owner_stats: StatsComponent
 var pending_result: Dictionary = {}
