@@ -92,6 +92,52 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+<style>
+#rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #000;
+  color: #fff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: sans-serif;
+  padding: 24px;
+}
+#rotate-overlay .icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: rotate-overlay-spin 1.6s ease-in-out infinite;
+}
+@keyframes rotate-overlay-spin {
+  0%, 20% { transform: rotate(0deg); }
+  50%, 70% { transform: rotate(90deg); }
+  100% { transform: rotate(90deg); }
+}
+@media (orientation: portrait) and (hover: none) and (pointer: coarse) {
+  #rotate-overlay { display: flex; }
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var overlay = document.createElement("div");
+  overlay.id = "rotate-overlay";
+
+  var icon = document.createElement("div");
+  icon.className = "icon";
+  icon.textContent = " ";
+  overlay.appendChild(icon);
+
+  var message = document.createElement("div");
+  message.textContent = "Please rotate your device to landscape to play.";
+  overlay.appendChild(message);
+
+  document.body.appendChild(overlay);
+});
+</script>
 
 	</head>
 	<body>
@@ -111,7 +157,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":357616,"index.wasm":43699190},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":357776,"index.wasm":43699190},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
