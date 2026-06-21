@@ -344,7 +344,16 @@ CHAIN_BASE: dict[str, str] = {
     "master_3": "master_1",
     "master_4": "master_1",
 }
-ANCHOR_DIRECTION = "down"  # the most reliable angle; side/up variants anchor to it
+# Anchor selection for a harder-angle variant of a non-combo base pose:
+#  - "side" borrows that pose's own "down" strip -- both show the face, so the front-facing
+#    anchor transfers proportions cleanly (validated on move/hurt/release/etc).
+#  - "up" CANNOT borrow "down": a front-facing anchor leaks the face into the back view and
+#    doesn't constrain the back-of-head dome (the model otherwise keeps drawing a too-small
+#    head from behind). It instead borrows idle_up -- the canonical neutral up-facing pose,
+#    which is already approved with a correct big back-of-head dome and the face hidden.
+#  - "down" base poses anchor to nothing (turnaround only); down is the primary, reliable angle.
+# Combo links never reach here -- they anchor to their same-direction chain base via CHAIN_BASE.
+IDLE_POSE = "idle"
 
 SIBLING_LOCK_INSTRUCTION = (
     "You are also given image (3): an already-approved sprite strip of THIS SAME character in "
@@ -363,13 +372,17 @@ SIBLING_LOCK_INSTRUCTION = (
 def sibling_of(name: str) -> str | None:
     """Best already-approved sibling strip to use as a proportion anchor, or None.
 
-    Combo links anchor to their chain base in the SAME direction; a side/up variant of a base
-    pose anchors to that pose's down variant. The chain rule takes precedence over the
-    direction rule, and a down-facing base pose has no sibling (turnaround anchor only).
+    Combo links anchor to their chain base in the SAME direction (highest precedence). Otherwise
+    a side variant anchors to its own pose's down strip, an up variant anchors to idle_up, and a
+    down base pose (and idle itself) anchors to nothing. See the IDLE_POSE comment for rationale.
     """
     pose, direction = name.rsplit("_", 1)
     if pose in CHAIN_BASE:
         return f"{CHAIN_BASE[pose]}_{direction}"
-    if direction != ANCHOR_DIRECTION:
-        return f"{pose}_{ANCHOR_DIRECTION}"
+    if pose == IDLE_POSE:
+        return None
+    if direction == "side":
+        return f"{pose}_down"
+    if direction == "up":
+        return f"{IDLE_POSE}_up"
     return None

@@ -96,11 +96,13 @@ combo's links:
   largest-headed frame is more than the tolerance below target. The measured ratio is printed
   for every strip, pass or fail, as a graded signal next to the existing height check.
 - **Sibling image anchor** (`poses.sibling_of`): when a strip is a later link in a combo
-  (`basic_kick_2/3`, `master_2/3/4`, ...) or a harder-angle variant of a pose (`side`/`up`),
-  the generator passes the already-approved sibling strip (the chain base in the same
-  direction, or the pose's `down` variant) as an extra reference image with an explicit
-  "match this head size and proportions exactly" instruction. The base/`down` strips must be
-  generated and approved first so the anchor exists on disk.
+  (`basic_kick_2/3`, `master_2/3/4`, ...) or the `side` variant of a base pose, the generator
+  passes the already-approved sibling strip (the chain base in the same direction, or the
+  pose's `down` variant) as an extra reference image with an explicit "match this head size
+  and proportions exactly" instruction. The anchor strip must be generated and approved first
+  so it exists on disk. Up-facing *base* poses use the turnaround alone -- a front-facing
+  `down` anchor would leak the face into the back view (combo up-links still anchor to their
+  up-facing chain base, which has no such conflict).
 
 ## Notes
 
