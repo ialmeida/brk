@@ -5,7 +5,7 @@ SPRITE_REGEN_BRIEF.md Method B) instead of one call per static frame, so frames 
 animation stay visually consistent with each other.
 """
 
-STYLE_PREAMBLE = (
+STYLE_PREAMBLE_GENERIC = (
     "Pixel art sprite of a video game character, in a steep top-down action-RPG camera "
     "angle, in the exact style of classic top-down chibi RPG sprites (Secret of Mana, "
     "Chrono Trigger overworld sprites, Pokemon overworld sprites, Stardew Valley) -- "
@@ -61,18 +61,16 @@ STYLE_PREAMBLE = (
     "Solid flat-color pixel-art shading with a limited color palette and a visible pixel "
     "grid (no smooth gradients, no anti-aliased painterly rendering, no photo-realistic "
     "rendering). Centered in frame with consistent character scale and proportions. "
-    "Likeness: base the character's face, hair, skin tone, and build on the attached "
-    "reference image of the character, keeping the same anime art style, while rendering "
-    "it as a chibi top-down pixel-art game sprite. Match the reference image's hairstyle "
-    "exactly: short, neat hair that sits close to the head with a small side-swept fringe, "
-    "cropped short at the back and sides -- the hair must NOT extend past the nape of the "
-    "neck or hang down the back of the head. NOT spiky, NOT voluminous, NOT long at the "
-    "back, NOT a tall or poofy anime hairstyle. Keep the hair silhouette small and "
-    "close-cropped like the reference. The character wears normal clear-lens prescription "
-    "glasses with a dark/black frame that has a clearly visible dark rim outline -- the "
-    "lenses are clear and see-through, never dark sunglasses, tinted lenses, or opaque "
-    "shades."
 )
+# The character-specific likeness/hairstyle/outfit prose lives per-character in
+# characters.py (Character.likeness_prose) and is appended to STYLE_PREAMBLE_GENERIC by
+# build_style_preamble(), so the generic camera/proportion scaffolding above stays shared
+# across every character while only the appearance description varies.
+
+
+def build_style_preamble(likeness_prose: str) -> str:
+    """Full style preamble for one character: shared scaffolding + that character's likeness."""
+    return STYLE_PREAMBLE_GENERIC + likeness_prose
 
 STYLE_LOCK_INSTRUCTION = (
     "You are given two reference images: (1) a reference image of the character, a normal "
@@ -244,8 +242,7 @@ STRIP_POSE_PROMPTS: dict[str, str] = {
     ),
 }
 
-TURNAROUND_PROMPT = (
-    f"{STYLE_PREAMBLE}\n\n"
+TURNAROUND_BODY = (
     "Output a single horizontal turnaround reference strip containing exactly 3 "
     "evenly-spaced, equal-width cells side by side, left to right: cell 1 = character "
     "facing the viewer/camera (south, facing down), cell 2 = character facing away from "
@@ -300,18 +297,92 @@ STYLE_RECAP = (
 _BASE_POSE_NAMES: list[str] = list(STRIP_POSE_PROMPTS.keys())
 _DIRECTIONS: list[str] = ["down", "up", "side"]
 
-STRIP_PROMPTS: dict[str, str] = {
-    f"{pose}_{direction}": (
-        f"{STYLE_PREAMBLE}\n\n"
-        f"{STRIP_STYLE_PREAMBLE.format(n=ANIMATION_FRAME_COUNTS[pose])}\n\n"
-        f"{DIRECTION_PROMPTS[direction]}\n\n"
-        f"{STRIP_POSE_PROMPTS[pose]}\n\n"
-        f"{STYLE_RECAP}"
-    )
-    for pose in _BASE_POSE_NAMES
-    for direction in _DIRECTIONS
-}
-
-STRIP_NAMES: list[str] = list(STRIP_PROMPTS.keys())
+# Strip names are independent of the (character-specific) prompt text so update_player_tscn.py
+# and qa wiring can rely on them without building any character's prompts.
+STRIP_NAMES: list[str] = [f"{pose}_{direction}"
+                          for pose in _BASE_POSE_NAMES
+                          for direction in _DIRECTIONS]
 
 CANARY_NAMES: list[str] = ["idle_down", "move_side"]
+
+
+def build_prompts(likeness_prose: str) -> dict[str, object]:
+    """Assemble every prompt for one character from the shared scaffolding + their likeness.
+
+    Returns {"strip_prompts": {name: prompt}, "turnaround_prompt": prompt}. The generic
+    camera/proportion/strip text is identical for every character; only the likeness block
+    (woven into the style preamble) varies.
+    """
+    preamble = build_style_preamble(likeness_prose)
+    strip_prompts = {
+        f"{pose}_{direction}": (
+            f"{preamble}\n\n"
+            f"{STRIP_STYLE_PREAMBLE.format(n=ANIMATION_FRAME_COUNTS[pose])}\n\n"
+            f"{DIRECTION_PROMPTS[direction]}\n\n"
+            f"{STRIP_POSE_PROMPTS[pose]}\n\n"
+            f"{STYLE_RECAP}"
+        )
+        for pose in _BASE_POSE_NAMES
+        for direction in _DIRECTIONS
+    }
+    turnaround_prompt = f"{preamble}\n\n{TURNAROUND_BODY}"
+    return {"strip_prompts": strip_prompts, "turnaround_prompt": turnaround_prompt}
+
+
+# --- Sibling anchoring -------------------------------------------------------------------
+# A later link in a combo chain, or a harder-angle variant of a pose, drifts in head/body
+# proportion when generated only from text + the static turnaround. To pin it down we pass an
+# already-approved sibling strip as an extra reference image (see SIBLING_LOCK_INSTRUCTION).
+# CHAIN_BASE maps each non-first combo link to the first (lightest) link of its chain; the
+# resolution rule below is data-driven so new combos/characters reuse it without edits here.
+CHAIN_BASE: dict[str, str] = {
+    "basic_punch_2": "basic_punch_1",
+    "basic_punch_3": "basic_punch_1",
+    "basic_kick_2": "basic_kick_1",
+    "basic_kick_3": "basic_kick_1",
+    "master_2": "master_1",
+    "master_3": "master_1",
+    "master_4": "master_1",
+}
+# Anchor selection for a harder-angle variant of a non-combo base pose:
+#  - "side" borrows that pose's own "down" strip -- both show the face, so the front-facing
+#    anchor transfers proportions cleanly (validated on move/hurt/release/etc).
+#  - "up" CANNOT borrow "down": a front-facing anchor leaks the face into the back view and
+#    doesn't constrain the back-of-head dome (the model otherwise keeps drawing a too-small
+#    head from behind). It instead borrows idle_up -- the canonical neutral up-facing pose,
+#    which is already approved with a correct big back-of-head dome and the face hidden.
+#  - "down" base poses anchor to nothing (turnaround only); down is the primary, reliable angle.
+# Combo links never reach here -- they anchor to their same-direction chain base via CHAIN_BASE.
+IDLE_POSE = "idle"
+
+SIBLING_LOCK_INSTRUCTION = (
+    "You are also given image (3): an already-approved sprite strip of THIS SAME character in "
+    "this exact top-down pixel-art style, generated earlier and confirmed correct. Image (3) "
+    "is a PROPORTION AND SCALE anchor only: match its head size and head diameter (the width "
+    "of the dome seen from above), its head-to-body size ratio, its short stocky limb length, "
+    "its shoulder width, and its overall character scale EXACTLY. The new strip you generate "
+    "must look like the same character at the same size as image (3), just in the new pose and "
+    "direction described below. Do NOT copy image (3)'s specific pose, facing direction, or "
+    "frame count -- only its proportions and scale. If the requested pose is a later, heavier "
+    "hit in a combo, the character must NOT become slimmer, taller, or smaller-headed than "
+    "image (3); a heavier hit changes the pose's energy, never the character's proportions."
+)
+
+
+def sibling_of(name: str) -> str | None:
+    """Best already-approved sibling strip to use as a proportion anchor, or None.
+
+    Combo links anchor to their chain base in the SAME direction (highest precedence). Otherwise
+    a side variant anchors to its own pose's down strip, an up variant anchors to idle_up, and a
+    down base pose (and idle itself) anchors to nothing. See the IDLE_POSE comment for rationale.
+    """
+    pose, direction = name.rsplit("_", 1)
+    if pose in CHAIN_BASE:
+        return f"{CHAIN_BASE[pose]}_{direction}"
+    if pose == IDLE_POSE:
+        return None
+    if direction == "side":
+        return f"{pose}_down"
+    if direction == "up":
+        return f"{IDLE_POSE}_up"
+    return None

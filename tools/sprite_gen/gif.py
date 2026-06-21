@@ -21,7 +21,7 @@ def save_loop_gif(frames: list[Image.Image], out_path: Path, fps: int = 8) -> No
                         duration=duration_ms, loop=0)
 
 
-def save_sheet(frames: list[Image.Image], out_path: Path, padding: int = 1) -> None:
+def build_sheet(frames: list[Image.Image], padding: int = 1) -> Image.Image:
     if not frames:
         raise ValueError("No frames to assemble into a sheet")
     cell_w, cell_h = frames[0].size
@@ -29,4 +29,8 @@ def save_sheet(frames: list[Image.Image], out_path: Path, padding: int = 1) -> N
     sheet = Image.new("RGBA", (sheet_w, cell_h), (0, 0, 0, 0))
     for i, frame in enumerate(frames):
         sheet.paste(frame, (i * (cell_w + padding), 0), frame)
-    sheet.save(out_path)
+    return sheet
+
+
+def save_sheet(frames: list[Image.Image], out_path: Path, padding: int = 1) -> None:
+    build_sheet(frames, padding=padding).save(out_path)
