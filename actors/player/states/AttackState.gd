@@ -39,4 +39,4 @@ func physics_update(_delta: float) -> void:
 func _on_step_finished() -> void:
 	if active_combo.get("is_complete", false):
 		player.combo.clear()
-		sm.transition_to("Idle")
+		sm.transition_to("Recover")

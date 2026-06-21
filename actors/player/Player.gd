@@ -43,8 +43,10 @@ func set_facing(dir: Vector2) -> void:
 		return
 	facing = dir.normalized()
 	sprite_dir = _quantize_sprite_dir(facing)
-	if sprite_dir == SpriteDir.SIDE:
-		animated_sprite.flip_h = facing.x < 0.0
+	# flip_h must track the CURRENT facing every call: mirror only for side-left, and clear it
+	# for up/down (those sprites are single canonical views and must never render mirrored).
+	# Updating it only in the SIDE branch left a stale flip when turning from a left move to up/down.
+	animated_sprite.flip_h = sprite_dir == SpriteDir.SIDE and facing.x < 0.0
 	hitbox.aim(facing)
 
 func _quantize_sprite_dir(dir: Vector2) -> int:
