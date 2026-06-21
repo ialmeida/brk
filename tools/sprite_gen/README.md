@@ -74,6 +74,34 @@ export GEMINI_API_KEY="..."   # never write this to a file
    python3 tools/sprite_gen/update_player_tscn.py
    ```
 
+## Multiple characters
+
+Every command takes `--character NAME` (default `player`). A character bundles its
+reference/raw/output directories, palette, approved turnaround, optional hair-color override,
+and the likeness/hairstyle/outfit prose, all in `characters.py`. The generic camera-angle,
+chibi-proportion, and strip-format prose stays shared in `poses.py`, so adding a character is
+just one `Character(...)` entry (paths + palette + likeness prose) -- no prompt copy-paste.
+Add a new character by registering it in `characters.CHARACTERS`, then run any command with
+`--character <name>`.
+
+## Proportion consistency
+
+Two mechanisms keep the head reading as the same-size dome across a pose's directions and a
+combo's links:
+
+- **QA head-dome check** (`qa.py`): the hair forms a solid dark dome at the top of the
+  silhouette; its diameter over the silhouette height is a direction-stable proxy for the
+  head-to-body ratio. Per-direction targets are derived dynamically from the approved
+  `turnaround.png` (no hardcoded ratio), and a strip FAILs in `qa_report.txt` if its
+  largest-headed frame is more than the tolerance below target. The measured ratio is printed
+  for every strip, pass or fail, as a graded signal next to the existing height check.
+- **Sibling image anchor** (`poses.sibling_of`): when a strip is a later link in a combo
+  (`basic_kick_2/3`, `master_2/3/4`, ...) or a harder-angle variant of a pose (`side`/`up`),
+  the generator passes the already-approved sibling strip (the chain base in the same
+  direction, or the pose's `down` variant) as an extra reference image with an explicit
+  "match this head size and proportions exactly" instruction. The base/`down` strips must be
+  generated and approved first so the anchor exists on disk.
+
 ## Notes
 
 - Never place your personal `--reference` image inside this repo, even temporarily. The
