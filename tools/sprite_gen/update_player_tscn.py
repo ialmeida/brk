@@ -27,6 +27,7 @@ LOOP_SPEED = 6.0
 RELEASE_SPEED = 8.0
 HURT_GAMEPLAY_LENGTH = 0.4
 ATTACK_GAMEPLAY_LENGTH = 0.12
+RECOVER_GAMEPLAY_LENGTH = 0.15  # post-attack settle (RecoverState holds this long before Idle)
 
 Manifest = list[tuple[str, str, int, list[int]]]  # (name, pose, frame_count, ext_ids)
 
@@ -46,6 +47,8 @@ def animation_speed(pose: str, frame_count: int) -> float:
         return RELEASE_SPEED
     if pose == "hurt":
         return frame_count / HURT_GAMEPLAY_LENGTH
+    if pose == "recover":
+        return frame_count / RECOVER_GAMEPLAY_LENGTH
     return frame_count / ATTACK_GAMEPLAY_LENGTH
 
 

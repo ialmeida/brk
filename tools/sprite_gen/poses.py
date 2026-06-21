@@ -112,6 +112,7 @@ ANIMATION_FRAME_COUNTS: dict[str, int] = {
     "charge_loop": 4,
     "release": 3,
     "hurt": 3,
+    "recover": 2,
     "basic_punch_1": 3,
     "basic_punch_2": 3,
     "basic_punch_3": 3,
@@ -178,6 +179,17 @@ STRIP_POSE_PROMPTS: dict[str, str] = {
         "A 3-frame hit-reaction flinch: frame 1 impact, body jolting backward off-balance, "
         "pained expression; frame 2 peak recoil, body leaning further back, arms raised "
         "defensively; frame 3 starting to recover, body beginning to straighten back up."
+    ),
+    "recover": (
+        "A 2-frame attack-recovery settle that bridges the end of a strike back to the neutral "
+        "idle standing pose -- this is the brief 'returning to stance' beat after a punch or "
+        "kick, NOT an attack itself, so there is no strike, no extended limb, and no energy. "
+        "Frame 1: half-recovered -- the body is unwinding from a strike, weight shifting back "
+        "toward center, arms drawing back in toward a relaxed guard, knees softening; clearly "
+        "more settled than a full attack lunge but not yet fully neutral. Frame 2: almost the "
+        "exact neutral idle rest pose -- upright and balanced, arms loosely at the sides, weight "
+        "centered -- so it reads as a smooth lead-in that flows directly into the idle stance. "
+        "Keep the motion small and grounded; only the arms/torso settle, the feet stay planted."
     ),
     "basic_punch_1": (
         "A 3-frame beginning jab punch: frame 1 anticipation wind-up with lead arm pulled "
@@ -344,15 +356,13 @@ CHAIN_BASE: dict[str, str] = {
     "master_3": "master_1",
     "master_4": "master_1",
 }
-# Anchor selection for a harder-angle variant of a non-combo base pose:
-#  - "side" borrows that pose's own "down" strip -- both show the face, so the front-facing
-#    anchor transfers proportions cleanly (validated on move/hurt/release/etc).
-#  - "up" CANNOT borrow "down": a front-facing anchor leaks the face into the back view and
-#    doesn't constrain the back-of-head dome (the model otherwise keeps drawing a too-small
-#    head from behind). It instead borrows idle_up -- the canonical neutral up-facing pose,
-#    which is already approved with a correct big back-of-head dome and the face hidden.
-#  - "down" base poses anchor to nothing (turnaround only); down is the primary, reliable angle.
-# Combo links never reach here -- they anchor to their same-direction chain base via CHAIN_BASE.
+# Proportion anchor for a non-combo pose: idle_<same_direction>. idle is the canonical reference
+# (it matches the turnaround and is generated/approved first as a canary), and it shares the
+# target's facing in every direction -- so there is never a face-leak (e.g. an up pose anchors to
+# the back-facing idle_up, a side pose to the face-showing idle_side). This pulls every pose's
+# head size and build toward idle, which is exactly what keeps walking/attacks from drifting
+# smaller-headed than the idle the player sees most. Combo links instead anchor to their
+# same-direction chain base (CHAIN_BASE), which itself anchors to idle, chaining the lock.
 IDLE_POSE = "idle"
 
 SIBLING_LOCK_INSTRUCTION = (
@@ -372,17 +382,13 @@ SIBLING_LOCK_INSTRUCTION = (
 def sibling_of(name: str) -> str | None:
     """Best already-approved sibling strip to use as a proportion anchor, or None.
 
-    Combo links anchor to their chain base in the SAME direction (highest precedence). Otherwise
-    a side variant anchors to its own pose's down strip, an up variant anchors to idle_up, and a
-    down base pose (and idle itself) anchors to nothing. See the IDLE_POSE comment for rationale.
+    Combo links anchor to their chain base in the SAME direction (highest precedence); every
+    other non-idle pose anchors to idle in its own direction; idle itself has no sibling. See the
+    IDLE_POSE comment for rationale.
     """
     pose, direction = name.rsplit("_", 1)
     if pose in CHAIN_BASE:
         return f"{CHAIN_BASE[pose]}_{direction}"
     if pose == IDLE_POSE:
         return None
-    if direction == "side":
-        return f"{pose}_down"
-    if direction == "up":
-        return f"{IDLE_POSE}_up"
-    return None
+    return f"{IDLE_POSE}_{direction}"
