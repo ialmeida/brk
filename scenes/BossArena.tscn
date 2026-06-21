@@ -16,10 +16,6 @@ position = Vector2(220, 360)
 [node name="Boss" parent="." instance=ExtResource("3")]
 position = Vector2(620, 360)
 
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(420, 360)
-zoom = Vector2(0.5, 0.5)
-
 [node name="TouchControls" parent="." instance=ExtResource("4")]
 
 [node name="HUD" type="CanvasLayer" parent="."]

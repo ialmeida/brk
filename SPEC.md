@@ -70,6 +70,7 @@ brk/
 ```
 Player (CharacterBody2D)            # Player.gd
 ├── AnimatedSprite2D                # 16-bit frames; per-combo-step animations
+├── Camera2D                        # zoom 3x; follows the player (child of Player)
 ├── CollisionShape2D                # body collision (world)
 ├── StateMachine (Node)             # StateMachine.gd, exports initial_state
 │   ├── Idle (Node)                 # IdleState.gd
@@ -119,10 +120,9 @@ Dojo (Node2D)                       # Dojo.gd — drives staged tutorial prompts
 ```
 BossArena (Node2D)
 ├── TileMapLayer
-├── Player (instance)
+├── Player (instance)               # carries its own follow Camera2D
 ├── Boss (instance, AI enabled)
-├── HUD (CanvasLayer): player HP, boss HP, charge meter
-└── Camera2D
+└── HUD (CanvasLayer): player HP, boss HP, charge meter
 ```
 
 ---
